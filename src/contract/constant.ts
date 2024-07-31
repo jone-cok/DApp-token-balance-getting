@@ -1,4 +1,4 @@
-export const address = '0x70bf9e70b9371c1ff51f35e00faa0958c82932d7';
+export const address = '0xab215bd15e7fb42ea703a1c02096e68f075e3e12';
 
 export const abi = [
     {
@@ -44,5 +44,5 @@ export const abi = [
         ],
         "stateMutability": "view",
         "type": "function"
-    },
-];
+    }
+]

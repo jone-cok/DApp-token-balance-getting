@@ -11,14 +11,15 @@ const index = () => {
   // const inputRef = useRef(null);
 
   const [isLoading, setIsLoading] = useState('idle');
-  const [number, setNumber] = useState(0);
-  const [number_set, setNumber_set] = useState(0);
+  const [number, setNumber] = useState('');
+
+  const [number_set, setNumber_set] = useState('');
 
   const connectToMetaMask = async () => {
     try {
       const accounts: any = await sdk?.connect();
       setAccount(accounts?.[0] || '');
-      console.log("success to connect to meta mask");
+      console.log("failed to connect to meta mask");
     } catch (err) {
       console.warn("failed to connect..", err);
     }
@@ -30,10 +31,10 @@ const index = () => {
   const getNumber = async () => {
     try {
       setIsLoading('fetching');
-      const number = await web3.methods.getData().call() as number;
+      const number = await web3.methods.getData().call() as string;
       setIsLoading('idle');
       setNumber(number);
-      console.log(number);
+      console.log('Fetched number:', number);
     } catch (error) {
       setIsLoading('idle');
       toast.error('Error in fetching fleet');
@@ -42,11 +43,6 @@ const index = () => {
 
   const handleAddNumber = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // if (inputRef.current && inputRef.current.value === '') {
-    //   return;
-    // }
-    console.log(number_set);
-    console.log(account);
     try {
       setIsLoading('adding');
       if (!account) {
@@ -54,7 +50,7 @@ const index = () => {
         setIsLoading('idle');
         return;
       }
-
+      console.log("setted number", number_set);
       await web3.methods
         .setData(number_set)
         .send({
@@ -62,7 +58,7 @@ const index = () => {
           gas: '3000000',
         })
         .on('receipt', () => {
-          setNumber_set(0);
+          setNumber_set('');
           getNumber();
           toast.success('Number added successfully');
           setIsLoading('idle');
@@ -84,26 +80,33 @@ const index = () => {
 
   return (
     <div className="App">
+      <button style={{ padding: 10, margin: 10 }} onClick={connectToMetaMask}>
+        Connect
+      </button>
+      {connected && (
+        <div>
+          <>
+            {chainId && `Connected chain: ${chainId}`}
+            <p></p>
+            {account && `Connected account: ${account}`}
+          </>
+        </div>
+      )}
 
       <section className='my-[20px]'>
-        <button style={{ padding: 10, margin: 10 }} onClick={connectToMetaMask}>
-          Connect
-        </button>
-        {connected && (
-          <div>
-            <>
-              {chainId && `Connected chain: ${chainId}`}
-              <p></p>
-              {account && `Connected account: ${account}`}
-            </>
-          </div>
-        )}
+        <div className='my-[10px] bg-salmon rounded-sm '>
+          {!connected && (
+            <button onClick={connectToMetaMask}>
+              {connecting ? 'Connecting...' : 'Connect to MetaMask'}
+            </button>
+          )}
+        </div>
         <div className='my-[10px]'>
           {isLoading === 'fetching' ? (
             <p>Fetching number...</p>
           ) : (
             <p>
-              Number: <span>{number}</span>
+              Number: <span>{number.toString()}</span>
             </p>
           )}
         </div>
@@ -114,12 +117,12 @@ const index = () => {
               placeholder="Enter number"
               value={number_set}
               onChange={(e) => {
-                setNumber_set(Number(e.target.value));
+                setNumber_set(e.target.value);
               }}
               required
               disabled={!connected}
             />
-            <button type="submit" disabled={!connected || isLoading === 'adding'} className="bg-curiousblue rounded-md hover:bg-codgray">
+            <button type="submit" disabled={!connected || isLoading === 'adding'}>
               {isLoading === 'adding' ? 'Adding...' : 'Add Number'}
             </button>
           </form>
