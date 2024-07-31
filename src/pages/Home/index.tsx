@@ -1,15 +1,22 @@
-import React, { useState, FormEvent } from "react";
+import React, { useState, FormEvent, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
+
 import { Contract, ethers, Wallet } from "ethers";
 import { BigNumberish } from "ethers";
 import dotenv from 'dotenv';
 dotenv.config();
+
+//================= Web3 ========================//
+// import { useAppContext } from '@/context/AppContext';
+import toast from 'react-hot-toast';
+
 //================= ipfs ========================//
 
 import axios from "axios";
 import FormData from "form-data";
 import fs from "fs";
 
-//================= Web3 ========================//
+//================= token ========================//
 interface TokenBalance {
   adress: string;
   // decimals: number;
@@ -31,12 +38,25 @@ interface TokensResponse {
   totalPages: number;
 }
 const Home = () => {
-  //state variables
+  //======================= token =====================//
   // const [tokens, setTokens] = useState<TokenBalance[]>([]);
   // const [address, setAddress] = useState('');
   //========================= ipfs =================//
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [cid, setCid]: any = useState();
+
+  //=========================web 3=======================//
+  // const { web3, account, connectToMetaMask, connected, connecting } =
+  //   useAppContext();
+  // const inputRef = useRef(null);
+
+  // const [isLoading, setIsLoading] = useState('idle');
+  // const [number, setNumber] = useState('');
+
+  // const [number_set, setNumber_set] = useState('');
+
+
+  //========================= token =================//
   // const handleSubmit = (e: FormEvent) => {
   //   e.preventDefault();
   //   setAddress(address);
@@ -118,8 +138,109 @@ const Home = () => {
     }
   };
 
+
+  // async function fetchMetadataFromIpfs(cid: string): Promise<void> {
+  //   try {
+  //     const gatewayUrl = `https://ipfs.io/ipfs/${cid}`;
+
+  //     const response = await fetch(gatewayUrl);
+  //     if (!response.ok) {
+  //       throw new Error(`Error: ${response.status} ${response.statusText}`);
+  //     }
+  //     // Try to parse as JSON
+  //     try {
+  //       const jsonData = await response.json();
+  //       console.log('Fetched JSON data:', jsonData);
+  //     } catch (jsonError) {
+  //       // If JSON parsing fails, handle as binary data
+  //       const blob = await response.blob();
+  //       const url = URL.createObjectURL(blob);
+  //       console.log('Fetched binary data:', url);
+
+  //       // For demonstration, open the file in a new tab
+  //       window.open(url);
+
+  //       // Or create an <a> element to download the file
+  //       // const link = document.createElement('a');
+  //       // link.href = url;
+  //       // link.download = 'file'; // Change to the desired file name
+  //       // document.body.appendChild(link);
+  //       // link.click();
+  //       // document.body.removeChild(link);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching data from IPFS:', error);
+  //   }
+  // }
+
+  // Example usage
+  // const cid = 'your_ipfs_cid_here';  // Replace with your IPFS CID
+
+  // cid && fetchMetadataFromIpfs(cid);
+
+
+
+  //========================= web3 ========================//
+  //     const app = new Web3(provider);
+  //     const web3 = new app.eth.Contract(abi, address);
+
+  // const getNumber = async () => {
+  //   try {
+  //     setIsLoading('fetching');
+  //     const number = await web3.methods.getData().call();
+  //     setIsLoading('idle');
+  //     setNumber(number);
+  //   } catch (error) {
+  //     setIsLoading('idle');
+  //     toast.error('Error in fetching fleet');
+  //   }
+  // };
+
+  // const handleAddNumber = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   // if (inputRef.current && inputRef.current.value === '') {
+  //   //   return;
+  //   // }
+  //   try {
+  //     setIsLoading('adding');
+  //     if (!account) {
+  //       toast.error('Please connect to your wallet');
+  //       setIsLoading('idle');
+  //       return;
+  //     }
+
+  //     await web3.methods
+  //       .setData(number_set)
+  //       .send({
+  //         from: account,
+  //         gas: 3000000,
+  //       })
+  //       .on('receipt', () => {
+  //         setNumber_set('');
+  //         getNumber();
+  //         toast.success('Number added successfully');
+  //         setIsLoading('idle');
+  //       })
+  //       .on('error', () => {
+  //         throw new Error('Error in adding number');
+  //       });
+  //   } catch (error) {
+  //     toast.error('Error in adding number');
+  //     setIsLoading('idle');
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   if (connected) {
+  //     getNumber();
+  //   }
+  // }, [connected]);
+
   return (
     <div className="h-screen w-screen flex flex-col items-center justify-center space-x-3">
+      <div className="bg-green my-[20px]">
+        <Link to="/about">Go to the About Page</Link>
+      </div>
       {/* <div className="flex justify-center space-x-3 w-screen h-14 mt-10">
         <form
           onSubmit={handleSubmit}
@@ -145,7 +266,7 @@ const Home = () => {
         file upload
       </button> */}
       {/* <label className="form-label bg-warn"> Choose File</label> */}
-      <div className="flex flex-col items-start justify-center space-x-3">
+      <div className="flex flex-col items-start justify-center space-x-3 my-[20px]">
         <div>
           <label htmlFor="file" className="sr-only">
             Choose a file
@@ -177,6 +298,43 @@ const Home = () => {
         )}
       </div>
 
+
+      
+      {/* <section className='my-[20px]'>
+        <div className='my-[10px] bg-salmon rounded-sm '>
+          {!connected && (
+            <button onClick={connectToMetaMask}>
+              {connecting ? 'Connecting...' : 'Connect to MetaMask'}
+            </button>
+          )}
+        </div>
+        <div className='my-[10px]'>
+          {isLoading === 'fetching' ? (
+            <p>Fetching number...</p>
+          ) : (
+            <p>
+              Number: <span>{number.toString()}</span>
+            </p>
+          )}
+        </div>
+        <div className='my-[10px]'>
+          <form onSubmit={handleAddNumber}>
+            <input
+              type="number"
+              placeholder="Enter number"
+              value={number_set}
+              onChange={(e) => {
+                setNumber_set(e.target.value);
+              }}
+              required
+              disabled={!connected}
+            />
+            <button type="submit" disabled={!connected || isLoading === 'adding'}>
+              {isLoading === 'adding' ? 'Adding...' : 'Add Number'}
+            </button>
+          </form>
+        </div>
+      </section> */}
     </div>
   );
 };
