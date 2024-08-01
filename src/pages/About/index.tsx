@@ -1,25 +1,87 @@
 import { useSDK } from "@metamask/sdk-react";
 import React, { useState, useEffect } from "react";
+import FormData from "form-data";
+
 import Web3 from 'web3';
 import { abi, address } from '@/contract/constant';
 import toast from 'react-hot-toast';
+import { all } from "axios";
+
+interface IProductDetals {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  imageaddress: string;
+  allowed: boolean;
+}
 
 const index = () => {
+  //=================== state of connect to metamask =================//
   const [account, setAccount] = useState<string>();
   const { sdk, connected, connecting, provider, chainId } = useSDK();
 
   // const inputRef = useRef(null);
-
+  //=================== state of get ProductDetails =================//
   const [isLoading, setIsLoading] = useState('idle');
-  const [number, setNumber] = useState('');
+  const [numProductt, setNumProduct] = useState<number>();
+  const [productsDetails, setProductsDetails] = useState<IProductDetals[]>([]);
+  //=================== state of set ProductDetails =================//
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [price, setPrice] = useState('');
+  const [imgAddress, setImgAddress] = useState('');
+  const [allowed, setAllowed] = useState('');
 
-  const [number_set, setNumber_set] = useState('');
+  //================================ ipfs file upload =================//
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [cid, setCid]: any = useState();
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+  const handleSubmission = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      const metadata = JSON.stringify({
+        name: "File name",
+      });
+      formData.append("pinataMetadata", metadata);
+      const options = JSON.stringify({
+        cidVersion: 0,
+      });
+      formData.append("pinataOptions", options);
+      const res = await fetch(
+        "https://api.pinata.cloud/pinning/pinFileToIPFS",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.VITE_PINATA_JWT}`,
+          },
+          body: formData as unknown as BodyInit,  // Cast FormData to BodyInit
+        }
+      );
+      if (!res.ok) {
+        throw new Error(`Error: ${res.status} ${res.statusText}`);
+      }
+      const resData = await res.json();
+      setCid(resData.IpfsHash);
+      console.log(resData);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const connectToMetaMask = async () => {
     try {
       const accounts: any = await sdk?.connect();
       setAccount(accounts?.[0] || '');
-      console.log("failed to connect to meta mask");
+      console.log("success to connect to meta mask");
+      numProductt && console.log(numProductt.toString());
+
     } catch (err) {
       console.warn("failed to connect..", err);
     }
@@ -31,10 +93,38 @@ const index = () => {
   const getNumber = async () => {
     try {
       setIsLoading('fetching');
-      const number = await web3.methods.getData().call() as string;
+      const numProduct = await web3.methods.numProduct().call() as string;
       setIsLoading('idle');
-      setNumber(number);
-      console.log('Fetched number:', number);
+      setNumProduct(parseInt(numProduct));
+      console.log(numProduct);
+
+      // getProductData();
+    } catch (error) {
+      setIsLoading('idle');
+      toast.error('Error in fetching numProduct');
+    }
+  };
+  const getProductData = async () => {
+    try {
+      setIsLoading('fetching');
+      if (numProductt) {
+        console.log("numProduct is exist", numProductt);
+
+        let arrayMed = [];
+        for (let _id = 0; _id < numProductt; _id++) {
+          const storedData = await web3.methods.products(_id).call() as IProductDetals;
+          storedData && console.log("stored data:", storedData);
+          console.log("circle", _id);
+
+          arrayMed[_id] = storedData;
+          setProductsDetails(arrayMed);
+        }
+        // console.log("retrieved data array is :", productsDetails);
+
+        setIsLoading('idle');
+      }
+      console.log("fetch data is successed");
+      console.log(productsDetails);
     } catch (error) {
       setIsLoading('idle');
       toast.error('Error in fetching fleet');
@@ -50,26 +140,35 @@ const index = () => {
         setIsLoading('idle');
         return;
       }
-      console.log("setted number", number_set);
+
+      //=================== upload data to ipfs  =================//
+      // handleSubmission();
+      //==========================================================//
       await web3.methods
-        .setData(number_set)
+        .storeData(name, description, Number(price), cid, Boolean(allowed))
         .send({
           from: account,
           gas: '3000000',
         })
         .on('receipt', () => {
-          setNumber_set('');
-          getNumber();
+          // setProductsDetails([]);
+          numProductt && setNumProduct(numProductt + 1);
+          // console.log(numProductt);
+          // getNumber();
+
+          // getProductData();
           toast.success('Number added successfully');
           setIsLoading('idle');
         })
         .on('error', () => {
           throw new Error('Error in adding number');
         });
+
     } catch (error) {
       toast.error('Error in adding number');
       setIsLoading('idle');
     }
+
   };
 
   useEffect(() => {
@@ -77,6 +176,13 @@ const index = () => {
       getNumber();
     }
   }, [connected]);
+
+  useEffect(() => {
+    numProductt && getProductData();
+  }, [numProductt]);
+  useEffect(() => {
+    selectedFile && handleSubmission();
+  }, [selectedFile]);
 
   return (
     <div className="App">
@@ -93,39 +199,139 @@ const index = () => {
         </div>
       )}
 
-      <section className='my-[20px]'>
-        <div className='my-[10px] bg-salmon rounded-sm '>
-          {!connected && (
-            <button onClick={connectToMetaMask}>
-              {connecting ? 'Connecting...' : 'Connect to MetaMask'}
-            </button>
-          )}
-        </div>
-        <div className='my-[10px]'>
-          {isLoading === 'fetching' ? (
-            <p>Fetching number...</p>
-          ) : (
-            <p>
-              Number: <span>{number.toString()}</span>
-            </p>
-          )}
-        </div>
-        <div className='my-[10px]'>
-          <form onSubmit={handleAddNumber}>
+      <section className='my-[20px] flex flex-row justify-between items-center'>
+        <div className='my-[10px] w-[50%] flex flex-col justify-between items-center'>
+          <form onSubmit={handleAddNumber} className="flex flex-col justify-between items-center w-full">
             <input
-              type="number"
-              placeholder="Enter number"
-              value={number_set}
+              className="w-[50%] bg-gray mt-4 h-10 rounded-lg"
+              type="text"
+              placeholder="Enter Name"
+              value={name}
               onChange={(e) => {
-                setNumber_set(e.target.value);
+                setName(e.target.value);
               }}
               required
               disabled={!connected}
             />
-            <button type="submit" disabled={!connected || isLoading === 'adding'}>
+            <input
+              className="w-[50%] bg-gray mt-4 h-10 rounded-lg"
+              type="text"
+              placeholder="Enter Descriptions"
+              value={description}
+              onChange={(e) => {
+                setDescription(e.target.value);
+              }}
+              required
+              disabled={!connected}
+            />
+            <input
+              className="w-[50%] bg-gray mt-4 h-10 rounded-lg"
+              type="number"
+              placeholder="Enter Price"
+              value={price}
+              onChange={(e) => {
+                setPrice(e.target.value);
+              }}
+              required
+              disabled={!connected}
+            />
+
+            <input
+              className="w-[50%] bg-gray mt-4 h-10 rounded-lg"
+              type="text"
+              placeholder="Enter Allowed"
+              value={allowed}
+              onChange={(e) => {
+                setAllowed(e.target.value);
+              }}
+              required
+              disabled={!connected}
+            />
+            <div className="flex flex-col items-start justify-center space-x-3 my-[50px]">
+              <div>
+                <label htmlFor="file" className="sr-only">
+                  Choose a file
+                </label>
+                <input id="file" type="file" onChange={handleFileChange} required />
+              </div>
+              <div className="flex flex-col justify-center items-center">
+                {selectedFile && (
+                  <section>
+                    File details:
+                    <ul>
+                      <li>Name: {selectedFile.name}</li>
+                      <li>Type: {selectedFile.type}</li>
+                      <li>Size: {selectedFile.size} bytes</li>
+                    </ul>
+                  </section>
+                )}
+                {/* {selectedFile && <div onClick={handleSubmission} className="bg-green w-[100px]">Upload a file</div>} */}
+              </div>
+              {cid && (
+                <div>
+                  <img
+                    src={`${process.env.VITE_GATEWAY_URL}/ipfs/${cid}`}
+                    alt="ipfs image"
+                    className="w-[200px] h-[200px] object-cover"
+                  />
+                  <div></div>
+                </div>
+              )}
+            </div>
+            <button className="w-[50%] bg-gray mt-4 h-10 rounded-lg"
+              type="submit" disabled={!connected || isLoading === 'adding'}>
               {isLoading === 'adding' ? 'Adding...' : 'Add Number'}
             </button>
           </form>
+
+        </div>
+        <div className="flex flex-col justify-between items-center w-[50%]">
+          <div className='my-[10px] bg-salmon rounded-sm '>
+            {!connected && (
+              <button onClick={connectToMetaMask}>
+                {connecting ? 'Connecting...' : 'Connect to MetaMask'}
+              </button>
+            )}
+          </div>
+          <div className='my-[10px] w-full'>
+            {isLoading === 'fetching' ? (
+              <p>Fetching number...</p>
+            ) : (
+              <ul className="w-full rounded-lg">
+                <div>
+                  Products number: <span>{numProductt && numProductt.toString()}</span>
+                </div>
+                {productsDetails && productsDetails.map((product, index) => (
+                  <li className="bg-green mt-10 rounded-lg" key={index}>
+                    <div>
+                      id: <span>{product.id.toString()}</span>
+                    </div>
+                    <div>
+                      name: <span>{product.name.toString()}</span>
+                    </div>
+                    <div>
+                      desc: <span>{product.description.toString()}</span>
+                    </div>
+                    <div>
+                      price: <span>{product.price.toString()}</span>
+                    </div>
+                    <div>
+                      imgaddress: <span>{product.imageaddress.toString()}</span>
+                      <img
+                        src={`${process.env.VITE_GATEWAY_URL}/ipfs/${product.imageaddress.toString()}`}
+                        alt="ipfs image"
+                        className="w-[200px] h-[200px] object-cover"
+                      />
+                    </div>
+                    <div>
+                      allowed: <span>{product.allowed.toString()}</span>
+                    </div>
+                  </li>))
+                }
+              </ul>
+            )}
+          </div>
+
         </div>
       </section>
     </div>

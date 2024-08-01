@@ -1,17 +1,10 @@
 import React, { useState, FormEvent, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-
 import { Contract, ethers, Wallet } from "ethers";
 import { BigNumberish } from "ethers";
 import dotenv from 'dotenv';
 dotenv.config();
-
-//================= Web3 ========================//
-// import { useAppContext } from '@/context/AppContext';
-import toast from 'react-hot-toast';
-
 //================= ipfs ========================//
-
 import axios from "axios";
 import FormData from "form-data";
 import fs from "fs";
@@ -44,17 +37,6 @@ const Home = () => {
   //========================= ipfs =================//
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [cid, setCid]: any = useState();
-
-  //=========================web 3=======================//
-  // const { web3, account, connectToMetaMask, connected, connecting } =
-  //   useAppContext();
-  // const inputRef = useRef(null);
-
-  // const [isLoading, setIsLoading] = useState('idle');
-  // const [number, setNumber] = useState('');
-
-  // const [number_set, setNumber_set] = useState('');
-
 
   //========================= token =================//
   // const handleSubmit = (e: FormEvent) => {
@@ -177,65 +159,6 @@ const Home = () => {
   // const cid = 'your_ipfs_cid_here';  // Replace with your IPFS CID
 
   // cid && fetchMetadataFromIpfs(cid);
-
-
-
-  //========================= web3 ========================//
-  //     const app = new Web3(provider);
-  //     const web3 = new app.eth.Contract(abi, address);
-
-  // const getNumber = async () => {
-  //   try {
-  //     setIsLoading('fetching');
-  //     const number = await web3.methods.getData().call();
-  //     setIsLoading('idle');
-  //     setNumber(number);
-  //   } catch (error) {
-  //     setIsLoading('idle');
-  //     toast.error('Error in fetching fleet');
-  //   }
-  // };
-
-  // const handleAddNumber = async (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-  //   // if (inputRef.current && inputRef.current.value === '') {
-  //   //   return;
-  //   // }
-  //   try {
-  //     setIsLoading('adding');
-  //     if (!account) {
-  //       toast.error('Please connect to your wallet');
-  //       setIsLoading('idle');
-  //       return;
-  //     }
-
-  //     await web3.methods
-  //       .setData(number_set)
-  //       .send({
-  //         from: account,
-  //         gas: 3000000,
-  //       })
-  //       .on('receipt', () => {
-  //         setNumber_set('');
-  //         getNumber();
-  //         toast.success('Number added successfully');
-  //         setIsLoading('idle');
-  //       })
-  //       .on('error', () => {
-  //         throw new Error('Error in adding number');
-  //       });
-  //   } catch (error) {
-  //     toast.error('Error in adding number');
-  //     setIsLoading('idle');
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   if (connected) {
-  //     getNumber();
-  //   }
-  // }, [connected]);
-
   return (
     <div className="h-screen w-screen flex flex-col items-center justify-center space-x-3">
       <div className="bg-green my-[20px]">
@@ -297,44 +220,6 @@ const Home = () => {
           </div>
         )}
       </div>
-
-
-      
-      {/* <section className='my-[20px]'>
-        <div className='my-[10px] bg-salmon rounded-sm '>
-          {!connected && (
-            <button onClick={connectToMetaMask}>
-              {connecting ? 'Connecting...' : 'Connect to MetaMask'}
-            </button>
-          )}
-        </div>
-        <div className='my-[10px]'>
-          {isLoading === 'fetching' ? (
-            <p>Fetching number...</p>
-          ) : (
-            <p>
-              Number: <span>{number.toString()}</span>
-            </p>
-          )}
-        </div>
-        <div className='my-[10px]'>
-          <form onSubmit={handleAddNumber}>
-            <input
-              type="number"
-              placeholder="Enter number"
-              value={number_set}
-              onChange={(e) => {
-                setNumber_set(e.target.value);
-              }}
-              required
-              disabled={!connected}
-            />
-            <button type="submit" disabled={!connected || isLoading === 'adding'}>
-              {isLoading === 'adding' ? 'Adding...' : 'Add Number'}
-            </button>
-          </form>
-        </div>
-      </section> */}
     </div>
   );
 };

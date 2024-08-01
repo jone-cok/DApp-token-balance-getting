@@ -1,27 +1,42 @@
-export const address = '0xab215bd15e7fb42ea703a1c02096e68f075e3e12';
+export const address = '0x06f356d48035931022ec45720a7fad499689ff7b';
 
 export const abi = [
     {
         "inputs": [
             {
+                "internalType": "string",
+                "name": "_name",
+                "type": "string"
+            },
+            {
+                "internalType": "string",
+                "name": "_desc",
+                "type": "string"
+            },
+            {
                 "internalType": "uint256",
-                "name": "_data",
+                "name": "_price",
                 "type": "uint256"
+            },
+            {
+                "internalType": "string",
+                "name": "_imgaddress",
+                "type": "string"
+            },
+            {
+                "internalType": "bool",
+                "name": "_allowed",
+                "type": "bool"
             }
         ],
-        "name": "setData",
+        "name": "storeData",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
     },
     {
         "inputs": [],
-        "stateMutability": "nonpayable",
-        "type": "constructor"
-    },
-    {
-        "inputs": [],
-        "name": "data",
+        "name": "getNumProduct",
         "outputs": [
             {
                 "internalType": "uint256",
@@ -34,12 +49,56 @@ export const abi = [
     },
     {
         "inputs": [],
-        "name": "getData",
+        "name": "numProduct",
         "outputs": [
             {
                 "internalType": "uint256",
                 "name": "",
                 "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "products",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "id",
+                "type": "uint256"
+            },
+            {
+                "internalType": "string",
+                "name": "name",
+                "type": "string"
+            },
+            {
+                "internalType": "string",
+                "name": "description",
+                "type": "string"
+            },
+            {
+                "internalType": "uint256",
+                "name": "price",
+                "type": "uint256"
+            },
+            {
+                "internalType": "string",
+                "name": "imageaddress",
+                "type": "string"
+            },
+            {
+                "internalType": "bool",
+                "name": "allowed",
+                "type": "bool"
             }
         ],
         "stateMutability": "view",
