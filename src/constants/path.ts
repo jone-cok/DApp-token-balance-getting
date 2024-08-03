@@ -1,4 +1,9 @@
 export default {
   HOME: "/",
-  ABOUT: "/about",
+  SIGNUP: "/signup",
+  LOGIN: "/login",
+  RESETPASSWORD: "/reset_password",
+  USER: "/user",
+  ADMIN: "/admin",
+  TOKENSHOW: "/tokenshow",
 };

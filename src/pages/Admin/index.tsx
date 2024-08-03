@@ -1,11 +1,15 @@
 import { useSDK } from "@metamask/sdk-react";
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import FormData from "form-data";
-
 import Web3 from 'web3';
-import { abi, address } from '@/contract/constant';
 import toast from 'react-hot-toast';
-import { all } from "axios";
+import { customToast } from "@/components/Toast";
+import { abi, address } from '@/contract/constant';
+import { ProductResponse } from "@/types/Product.types";
+import Product, { AddProductData } from '@/service/apis/product';
+import path from "@/constants/path";
+
 
 interface IProductDetals {
   id: number;
@@ -17,6 +21,8 @@ interface IProductDetals {
 }
 
 const index = () => {
+  const navigate = useNavigate();
+
   //=================== state of connect to metamask =================//
   const [account, setAccount] = useState<string>();
   const { sdk, connected, connecting, provider, chainId } = useSDK();
@@ -27,10 +33,10 @@ const index = () => {
   const [numProductt, setNumProduct] = useState<number>();
   const [productsDetails, setProductsDetails] = useState<IProductDetals[]>([]);
   //=================== state of set ProductDetails =================//
+  const [productId, setProductId] = useState(0);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [imgAddress, setImgAddress] = useState('');
+  const [price, setPrice] = useState<number>(0);
   const [allowed, setAllowed] = useState('');
 
   //================================ ipfs file upload =================//
@@ -113,25 +119,23 @@ const index = () => {
         let arrayMed = [];
         for (let _id = 0; _id < numProductt; _id++) {
           const storedData = await web3.methods.products(_id).call() as IProductDetals;
-          storedData && console.log("stored data:", storedData);
-          console.log("circle", _id);
-
+          // storedData && console.log("stored data:", storedData);
+          // console.log("circle", _id);
           arrayMed[_id] = storedData;
           setProductsDetails(arrayMed);
         }
         // console.log("retrieved data array is :", productsDetails);
-
         setIsLoading('idle');
       }
       console.log("fetch data is successed");
-      console.log(productsDetails);
+      // console.log(productsDetails);
     } catch (error) {
       setIsLoading('idle');
       toast.error('Error in fetching fleet');
     }
   };
 
-  const handleAddNumber = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAddProductData = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       setIsLoading('adding');
@@ -157,18 +161,54 @@ const index = () => {
           // getNumber();
 
           // getProductData();
-          toast.success('Number added successfully');
+          toast.success('ProductData added to blockchain successfully');
           setIsLoading('idle');
         })
         .on('error', () => {
-          throw new Error('Error in adding number');
+          throw new Error('Error in adding Productdata to blockchain');
         });
 
     } catch (error) {
-      toast.error('Error in adding number');
+      toast.error('Error in adding ProductData to blockchain');
       setIsLoading('idle');
     }
 
+    handleAddProductDataToDB();
+  };
+
+  const handleAddProductDataToDB = async () => {
+    const resp = (await AddProductData({ productId, name, description, price, cid, allowed }) as ProductResponse);
+    if (resp.status === 200) {
+      customToast({
+        toastType: "success",
+        title: "Product is registered successfully!",
+      });
+    } else {
+      customToast({
+        toastType: "error",
+        title: resp.message as string,
+      });
+      localStorage.removeItem("token");
+      navigate(path.LOGIN);
+    }
+  };
+
+  const handleGetProductDataById = async () => {
+    const resp = (await Product.getProduct(productId ) as ProductResponse);
+    
+    if (resp.status === 200) {
+      customToast({
+        toastType: "success",
+        title: "Product is getted successfully!",
+      });
+    } else {
+      customToast({
+        toastType: "error",
+        title: resp.message as string,
+      });
+      localStorage.removeItem("token");
+      navigate(path.LOGIN);
+    }
   };
 
   useEffect(() => {
@@ -201,7 +241,18 @@ const index = () => {
 
       <section className='my-[20px] flex flex-row justify-between items-center'>
         <div className='my-[10px] w-[50%] flex flex-col justify-between items-center'>
-          <form onSubmit={handleAddNumber} className="flex flex-col justify-between items-center w-full">
+          <form onSubmit={handleAddProductData} className="flex flex-col justify-between items-center w-full">
+            <input
+              className="w-[50%] bg-gray mt-4 h-10 rounded-lg"
+              type="number"
+              placeholder="Enter productId"
+              value={productId}
+              onChange={(e) => {
+                setProductId(Number(e.target.value));
+              }}
+              required
+              disabled={!connected}
+            />
             <input
               className="w-[50%] bg-gray mt-4 h-10 rounded-lg"
               type="text"
@@ -230,7 +281,7 @@ const index = () => {
               placeholder="Enter Price"
               value={price}
               onChange={(e) => {
-                setPrice(e.target.value);
+                setPrice(Number(e.target.value));
               }}
               required
               disabled={!connected}
@@ -284,6 +335,9 @@ const index = () => {
             </button>
           </form>
 
+          <button className="w-[50%] bg-gray mt-4 h-10 rounded-lg" onClick={handleGetProductDataById}>
+            Get Product by Id from DB 
+          </button>
         </div>
         <div className="flex flex-col justify-between items-center w-[50%]">
           <div className='my-[10px] bg-salmon rounded-sm '>
@@ -295,7 +349,7 @@ const index = () => {
           </div>
           <div className='my-[10px] w-full'>
             {isLoading === 'fetching' ? (
-              <p>Fetching number...</p>
+              <p>Fetching Data...</p>
             ) : (
               <ul className="w-full rounded-lg">
                 <div>
@@ -315,14 +369,14 @@ const index = () => {
                     <div>
                       price: <span>{product.price.toString()}</span>
                     </div>
-                    <div>
+                    {/* <div>
                       imgaddress: <span>{product.imageaddress.toString()}</span>
                       <img
                         src={`${process.env.VITE_GATEWAY_URL}/ipfs/${product.imageaddress.toString()}`}
                         alt="ipfs image"
                         className="w-[200px] h-[200px] object-cover"
                       />
-                    </div>
+                    </div> */}
                     <div>
                       allowed: <span>{product.allowed.toString()}</span>
                     </div>
