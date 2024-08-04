@@ -17,8 +17,6 @@ const Login = () => {
     const resp: AuthResponse = await login({ email, password });
 
     if (resp.status == 200) {
-      // setToken(resp.token as string);
-      // localStorage.setItem("token", resp.token as string);
       navigate(path.USER);
       console.log(resp.token as string);
 

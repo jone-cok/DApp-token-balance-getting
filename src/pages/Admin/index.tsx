@@ -6,10 +6,11 @@ import Web3 from 'web3';
 import toast from 'react-hot-toast';
 import { customToast } from "@/components/Toast";
 import { abi, address } from '@/contract/constant';
-import { ProductResponse } from "@/types/Product.types";
-import Product, { AddProductData } from '@/service/apis/product';
+import { ProductResponse, IProduct } from "@/types/Product.types";
+import Product from '@/service/apis/product';
 import path from "@/constants/path";
 
+import { checkJWT } from "@/routes/AuthPageRoute";
 
 interface IProductDetals {
   id: number;
@@ -23,25 +24,25 @@ interface IProductDetals {
 const index = () => {
   const navigate = useNavigate();
 
-  //=================== state of connect to metamask =================//
+  //====================== active ========================================//
+
+  //====== state of connect to metamask =======//
   const [account, setAccount] = useState<string>();
   const { sdk, connected, connecting, provider, chainId } = useSDK();
-
-  // const inputRef = useRef(null);
-  //=================== state of get ProductDetails =================//
+  //====== state of get ProductDetails ========//
   const [isLoading, setIsLoading] = useState('idle');
   const [numProductt, setNumProduct] = useState<number>();
   const [productsDetails, setProductsDetails] = useState<IProductDetals[]>([]);
-  //=================== state of set ProductDetails =================//
-  const [productId, setProductId] = useState(0);
+  //====== state of set ProductDetails ========//
+  const [productId, setProductId] = useState('');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [price, setPrice] = useState<number>(0);
+  const [price, setPrice] = useState('');
   const [allowed, setAllowed] = useState('');
-
-  //================================ ipfs file upload =================//
+  //======== ipfs file upload =================//
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [cid, setCid]: any = useState();
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -176,41 +177,6 @@ const index = () => {
     handleAddProductDataToDB();
   };
 
-  const handleAddProductDataToDB = async () => {
-    const resp = (await AddProductData({ productId, name, description, price, cid, allowed }) as ProductResponse);
-    if (resp.status === 200) {
-      customToast({
-        toastType: "success",
-        title: "Product is registered successfully!",
-      });
-    } else {
-      customToast({
-        toastType: "error",
-        title: resp.message as string,
-      });
-      localStorage.removeItem("token");
-      navigate(path.LOGIN);
-    }
-  };
-
-  const handleGetProductDataById = async () => {
-    const resp = (await Product.getProduct(productId ) as ProductResponse);
-    
-    if (resp.status === 200) {
-      customToast({
-        toastType: "success",
-        title: "Product is getted successfully!",
-      });
-    } else {
-      customToast({
-        toastType: "error",
-        title: resp.message as string,
-      });
-      localStorage.removeItem("token");
-      navigate(path.LOGIN);
-    }
-  };
-
   useEffect(() => {
     if (connected) {
       getNumber();
@@ -224,8 +190,118 @@ const index = () => {
     selectedFile && handleSubmission();
   }, [selectedFile]);
 
+
+
+
+
+
+
+
+
+
+
+
+  //====================== test mongodb =================================//
+  const [productFromDB, setProductFromDB] = useState<IProduct>()
+
+  const handleAddProductDataToDB = async () => {
+    checkJWT();
+    console.log(localStorage.getItem('token'));
+    const resp = (await Product.addProduct({ productId, name, description, price, cid, allowed }) as ProductResponse);
+    if (resp.status === 200) {
+      customToast({
+        toastType: "success",
+        title: "Product is registered successfully!",
+      });
+    } else if (resp.status === 401) {
+      customToast({
+        toastType: "error",
+        title: resp.message as string,
+      });
+      localStorage.removeItem("token");
+      navigate(path.LOGIN);
+    } else {
+      customToast({
+        toastType: "error",
+        title: resp.message as string,
+      });
+    }
+  };
+  const handleUpdateProductDataById = async () => {
+    checkJWT();
+    console.log(localStorage.getItem('token'));
+    const resp = (await Product.updateProduct(productId, { productId, name, description, price, cid, allowed }) as ProductResponse);
+    if (resp.status === 200) {
+      customToast({
+        toastType: "success",
+        title: "Product is registered successfully!",
+      });
+    } else if (resp.status === 401) {
+      customToast({
+        toastType: "error",
+        title: resp.message as string,
+      });
+      localStorage.removeItem("token");
+      navigate(path.LOGIN);
+    } else {
+      customToast({
+        toastType: "error",
+        title: resp.message as string,
+      });
+    }
+  };
+
+  const handleGetProductDataById = async () => {
+    const resp = (await Product.getProduct(productId) as ProductResponse);
+
+    if (resp.status === 200) {
+      setProductFromDB(resp.productData);
+      console.log(String(resp.productData));
+      customToast({
+        toastType: "success",
+        title: "Product is getted successfully!",
+      });
+    } else if (resp.status === 401) {
+      customToast({
+        toastType: "error",
+        title: resp.message as string,
+      });
+      localStorage.removeItem("token");
+      navigate(path.LOGIN);
+    } else {
+      customToast({
+        toastType: "error",
+        title: resp.message as string,
+      });
+    }
+  };
+
+  const handleDeleteProductDataById = async () => {
+    const resp = (await Product.deleteProduct(productId) as ProductResponse);
+    if (resp.status === 200) {
+      customToast({
+        toastType: "success",
+        title: "Product is deleted successfully!",
+      });
+    } else if (resp.status === 401) {
+      customToast({
+        toastType: "error",
+        title: resp.message as string,
+      });
+      localStorage.removeItem("token");
+      navigate(path.LOGIN);
+    } else {
+      customToast({
+        toastType: "error",
+        title: resp.message as string,
+      });
+    }
+  };
+
   return (
     <div className="App">
+
+      {/* connect to metamask section */}
       <button style={{ padding: 10, margin: 10 }} onClick={connectToMetaMask}>
         Connect
       </button>
@@ -239,8 +315,13 @@ const index = () => {
         </div>
       )}
 
+      {/* product data register and get section with block and mongodb */}
+
       <section className='my-[20px] flex flex-row justify-between items-center'>
         <div className='my-[10px] w-[50%] flex flex-col justify-between items-center'>
+
+          {/* product data register section */}
+
           <form onSubmit={handleAddProductData} className="flex flex-col justify-between items-center w-full">
             <input
               className="w-[50%] bg-gray mt-4 h-10 rounded-lg"
@@ -248,7 +329,7 @@ const index = () => {
               placeholder="Enter productId"
               value={productId}
               onChange={(e) => {
-                setProductId(Number(e.target.value));
+                setProductId(e.target.value);
               }}
               required
               disabled={!connected}
@@ -281,7 +362,7 @@ const index = () => {
               placeholder="Enter Price"
               value={price}
               onChange={(e) => {
-                setPrice(Number(e.target.value));
+                setPrice(e.target.value);
               }}
               required
               disabled={!connected}
@@ -331,22 +412,35 @@ const index = () => {
             </div>
             <button className="w-[50%] bg-gray mt-4 h-10 rounded-lg"
               type="submit" disabled={!connected || isLoading === 'adding'}>
-              {isLoading === 'adding' ? 'Adding...' : 'Add Number'}
+              {isLoading === 'adding' ? 'Adding...' : 'Add productdata'}
             </button>
           </form>
 
+          {/* product data get by id section from mongodb*/}
+          <div>
+            <label>{productFromDB?.name}</label>
+          </div>
           <button className="w-[50%] bg-gray mt-4 h-10 rounded-lg" onClick={handleGetProductDataById}>
-            Get Product by Id from DB 
+            Get Product by Id from DB
+          </button>
+          <button className="w-[50%] bg-gray mt-4 h-10 rounded-lg" onClick={handleDeleteProductDataById}>
+            Delete Product by Id from DB
+          </button>
+          <button className="w-[50%] bg-gray mt-4 h-10 rounded-lg" onClick={handleUpdateProductDataById}>
+            Update Product by Id from DB
           </button>
         </div>
+
+        {/* product data get from blockchain(ipfs and smartcontract) section */}
+
         <div className="flex flex-col justify-between items-center w-[50%]">
-          <div className='my-[10px] bg-salmon rounded-sm '>
+          {/* <div className='my-[10px] bg-salmon rounded-sm '>
             {!connected && (
               <button onClick={connectToMetaMask}>
                 {connecting ? 'Connecting...' : 'Connect to MetaMask'}
               </button>
             )}
-          </div>
+          </div> */}
           <div className='my-[10px] w-full'>
             {isLoading === 'fetching' ? (
               <p>Fetching Data...</p>

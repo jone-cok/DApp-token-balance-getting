@@ -20,9 +20,6 @@ const SignUp = () => {
     if (password === password2) {
       const resp = (await signup({ name, email, password })) as AuthResponse;
       if (resp.status == 200) {
-        // setToken(resp.token as string);
-        // localStorage.setItem("token", resp.token as string);
-        // console.log(resp.token as string);
         customToast({
           toastType: "success",
           title: "Register successfully!",

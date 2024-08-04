@@ -3,7 +3,8 @@ import { axiosInstance, axiosInstanceWithToken } from '@/service/apis/axios.inst
 import { AxiosError } from "axios";
 import { log } from "console";
 
-export const AddProductData = async (productinfo: ProductAddRequest) => {
+export const addProduct = async (productinfo: ProductAddRequest) => {
+    console.log(productinfo);
     try {
         const response = await axiosInstanceWithToken.post("/product/store", productinfo);
         const isSuccess: boolean = response.status == 200;
@@ -16,30 +17,56 @@ export const AddProductData = async (productinfo: ProductAddRequest) => {
         return result;
     } catch (error: any) {
         const result: ProductResponse = {
-            status: error.status,
+            status: error.response.status,
             msg: "failed",
         };
         if (error instanceof AxiosError) {
             result.msg = error.response?.data.msg;
             result.message = error.response?.data.message;
         }
+        console.log(error);
         return result;
     }
 
 };
 
-export const getProduct = async (productid: number) => {
+export const getProduct = async (productId: string) => {
     try {
-        // const response = await axiosInstanceWithToken.get(`/product/${productId}`, productId);
-        const response = await axiosInstanceWithToken.get(`/product/${productid}`);
-        console.log(`/product/:${productid}`);
+        const response = await axiosInstanceWithToken.get(`/product/${productId}`);
+        // const response = await axiosInstance.get(`/product/${productId}`);
+        console.log(`/product/${productId}`);
         const isSuccess: boolean = response.status == 200;
         const result: ProductResponse = {
             status: response.status,
             msg: isSuccess ? "Success" : "failed",
-            productData: isSuccess ? response.data.data : "",
+            productData: isSuccess ? response.data.productData : "",
         }
-        result.productData && console.log("getted product id:", result.productData.productId);
+        result.productData && console.log("getted product", result.productData);
+        return result;
+    } catch (error: any) {
+        const result: ProductResponse = {
+            status: error.response?.status,
+            msg: "failed",
+        };
+        if (error instanceof AxiosError) {
+            result.msg = error.response?.data.msg;
+            result.message = error.response?.data.message;
+        }
+        console.log(error);
+        return result;
+    }
+};
+
+export const updateProduct = async (productId: string, productinfo: ProductUpdateRequest) => {
+    try {
+        const response = await axiosInstanceWithToken.put(`/product/${productId}`, productinfo);
+        const isSuccess: boolean = response.status == 200;
+        const result: ProductResponse = {
+            status: response.status,
+            msg: isSuccess ? "Success" : "failed",
+            productData: isSuccess ? response.data.productData : "",
+        }
+        result.productData && console.log("upadteded product id:", String(result.productData));
         return result;
     } catch (error: any) {
         const result: ProductResponse = {
@@ -54,41 +81,15 @@ export const getProduct = async (productid: number) => {
     }
 };
 
-
-export const updateProduct = async (productid: number, productinfo: ProductUpdateRequest) => {
-    try {
-        const response = await axiosInstanceWithToken.put(`/product/${productid}`, productinfo);
-        const isSuccess: boolean = response.status == 200;
-        const result: ProductResponse = {
-            status: response.status,
-            msg: isSuccess ? "Success" : "failed",
-            productData: isSuccess ? response.data.data : "",
-        }
-        result.productData && console.log("upadteded product id:", result.productData.productId);
-        return result;
-    } catch (error: any) {
-        const result: ProductResponse = {
-            status: error.status,
-            msg: "failed",
-        };
-        if (error instanceof AxiosError) {
-            result.msg = error.response?.data.msg;
-            result.message = error.response?.data.message;
-        }
-        return result;
-    }
-};
-
-export const deleteProduct = async (productid: number) => {
+export const deleteProduct = async (productId: string) => {
     try {
         // const response = await axiosInstanceWithToken.delete(`/product/${productId}`, productId);
-        const response = await axiosInstanceWithToken.delete(`/product/${productid}`);
-
+        const response = await axiosInstanceWithToken.delete(`/product/${productId}`);
         const isSuccess: boolean = response.status == 200;
         const result: ProductResponse = {
             status: response.status,
             msg: isSuccess ? "Success" : "failed",
-            message: isSuccess ? "Delete success" : "Delete falied",
+            message: isSuccess ? response.data.message : "Delete falied",
         }
         return result;
     } catch (error: any) {
@@ -105,26 +106,9 @@ export const deleteProduct = async (productid: number) => {
 };
 
 const _ = {
-    AddProductData,
+    addProduct,
     getProduct,
     updateProduct,
     deleteProduct,
 }
 export default _;
-
-// export const getUsers = async (id) => {
-//     id = id || '';
-//     return await axios.get(`${usersUrl}/${id}`);
-// }
-
-// export const addUser = async (user) => {
-//     return await axios.post(`${usersUrl}/add`, user);
-// }
-
-// export const deleteUser = async (id) => {
-//     return await axios.delete(`${usersUrl}/${id}`);
-// }
-
-// export const editUser = async (id, user) => {
-//     return await axios.put(`${usersUrl}/${id}`, user)
-// }

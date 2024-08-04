@@ -7,6 +7,7 @@ export const login = async (userInfo: LoginRequest) => {
   try {
     const response = await axiosInstance.post("/auth/signin", userInfo);
     const isSuccess: boolean = response.status == 200;
+    console.log(isSuccess);
     const result: AuthResponse = {
       status: response.status,
       msg: isSuccess ? "Success" : "failed",
@@ -25,7 +26,7 @@ export const login = async (userInfo: LoginRequest) => {
       msg: "failed",
       token: undefined
     };
-    
+
     if (error instanceof AxiosError) {
       result.msg = error.response?.data.msg;
       result.message = error.response?.data.message;

@@ -24,17 +24,14 @@ const HomeRoutes = [
     path: path.SIGNUP,
     element: <AuthPageRoute element={SignUp} />,
   },
-  {
-    path: path.RESETPASSWORD,
-    element: <ProtectedRoute element={ResetPassword} />
-  },
+ 
   {
     path: path.USER,
-    element: <User />,
+    element: <ProtectedRoute element={User} />,
   },
   {
     path: path.ADMIN,
-    element: <Admin />,
+    element: <ProtectedRoute element={Admin} />,
   },
   {
     path: path.TOKENSHOW,
