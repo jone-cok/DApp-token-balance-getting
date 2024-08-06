@@ -8,11 +8,11 @@ interface ProtectedRouteProps {
 }
 export const checkJWT = () => {
   const token = localStorage.getItem('token');
-  console.log(token);
+  // console.log(token);
   if (!token) return false;
   try {
     const { exp } = jwtDecode(token);
-    console.log(exp && exp * 1000);
+    // console.log(exp && exp * 1000);
     if (exp && (Date.now() >= exp * 1000)) {
       return false; // Token has expired
     }
@@ -29,10 +29,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (token && checkJWT()) {
     // Redirect to login if the user is not authenticated
-    return <Navigate to={path.USER} />;
+    return <Navigate to={path.PRODUCT} />
   }
   // Render the protected component
-  return <Component />;
+  return <Component />
 };
 
 export default ProtectedRoute;

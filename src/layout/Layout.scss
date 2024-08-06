@@ -1,0 +1,30 @@
+* {
+  box-sizing: border-box;
+}
+
+.footer {
+  background-color: #6c18d8;
+  color: #ffffff;
+  font-size: 12px;
+  padding: 15px;
+  min-height: 320px;
+}
+
+@media screen and (min-width: 768px) {
+  /* For desktop: */
+
+  .maclogo {
+    width: 46%;
+  }
+
+  .header-side {
+    min-width: 259px;
+    height: 664px;
+    border-radius: 20px;
+    border: white solid 1px;
+    margin-top: 18px;
+    margin-left: 15px;
+    background-color: linear-gradient(to left, white, transparent);
+    // background-image: linear-gradient(to bottom right, red, yellow);
+  }
+}

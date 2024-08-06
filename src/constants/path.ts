@@ -5,5 +5,6 @@ export default {
   RESETPASSWORD: "/reset_password",
   USER: "/user",
   ADMIN: "/admin",
+  PRODUCT:"/product",
   TOKENSHOW: "/tokenshow",
 };

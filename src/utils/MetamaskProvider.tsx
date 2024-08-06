@@ -21,7 +21,7 @@ const MetamaskProvider: React.FC<IMetamaskProvider> = ({ children }) => {
 
                 }}
             >
-                {children};
+                {children}
             </MetaMaskProvider>
         </>
     );

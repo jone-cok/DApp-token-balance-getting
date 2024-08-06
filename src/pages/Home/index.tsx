@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 
 const index = () => {
   return (
-    <div className="flex justify-center pt-10 text-white">
+    <div className="flex justify-center items-center text-white h-full m-auto my-16">
       <div className="w-96">
-        <div className="mt-10 rounded-xl">
+        <div className=" rounded-xl">
           <img src={ProfileImg} className="w-full rounded-xl" />
         </div>
         <div>
@@ -15,7 +15,7 @@ const index = () => {
             </button>
           </Link>
         </div>
-        <div>
+        <div className="">
           <Link to="/login">
             <button className="logInButtonColor mt-6 w-full rounded-xl py-4 bg-black">
               Log In

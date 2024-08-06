@@ -34,14 +34,15 @@ export const getProduct = async (productId: string) => {
     try {
         const response = await axiosInstanceWithToken.get(`/product/${productId}`);
         // const response = await axiosInstance.get(`/product/${productId}`);
-        console.log(`/product/${productId}`);
+        // console.log(`/product/${productId}`);
         const isSuccess: boolean = response.status == 200;
         const result: ProductResponse = {
             status: response.status,
             msg: isSuccess ? "Success" : "failed",
             productData: isSuccess ? response.data.productData : "",
+            productAll: isSuccess? response.data.productAll: [],
         }
-        result.productData && console.log("getted product", result.productData);
+        // console.log("products length", response.data.productAll);
         return result;
     } catch (error: any) {
         const result: ProductResponse = {

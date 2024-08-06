@@ -1,20 +1,20 @@
 import { IBasicResponse } from "./Response.types";
 
 export interface ProductAddRequest {
-  productId: string;
+  productId: number;
   name: string;
   description: string;
-  price: string;
-  cid: string;
-  allowed: string;
+  price: number;
+  imageaddress: string;
+  allowed: number;
 }
 export interface ProductUpdateRequest {
-  productId: string;
+  productId: number;
   name: string;
   description: string;
-  price: string;
-  cid: string;
-  allowed: string;
+  price: number;
+  imageaddress: string;
+  allowed: number;
 }
 // export interface ProductGetRequest {
 //   productId: number;
@@ -24,15 +24,16 @@ export interface ProductUpdateRequest {
 // }
 
 export interface IProduct {
-  productId?: string;
-  name?: string;
-  description?: string;
-  price?: string;
-  cid?: string;
-  allowed?: string;
+  productId: number;
+  name: string;
+  description: string;
+  price: number;
+  imageaddress: string;
+  allowed: number;
 }
 
 export interface ProductResponse extends IBasicResponse {
   message?: string;
   productData?: IProduct;
+  productAll?: IProduct[];
 }

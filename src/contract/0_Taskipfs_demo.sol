@@ -139,24 +139,46 @@ pragma solidity >=0.7.0 <0.9.0;
 contract wallet{
 
     //================= store data=====================//
+    uint public numProduct;
+
     struct ProductDetail{
         uint id;
         string name;
         string description;
         uint price;
         string imageaddress;
-        uint numProduct;
-        bool allowed;
+        uint allowed;
     }
 
-    mapping (uint=>ProductDetail) products;
+    mapping (uint=>ProductDetail) public products;
 
-    function storeData(uint _id, string memory _name, string memory _desc, uint _price, string memory _imgaddress,uint _numproduct, bool _allowed) public {
-        products[_id] = ProductDetail(_id, _name,_desc, _price,_imgaddress,_numproduct,_allowed);
+    function storeData(string memory _name, string memory _desc, uint _price, string memory _imgaddress, uint _allowed) public {
+        products[numProduct] = ProductDetail(numProduct, _name,_desc, _price,_imgaddress,_allowed);
+        numProduct++;
+    }
+    function updateData(uint _id,string memory _name, string memory _desc, uint _price, string memory _imgaddress, uint _allowed) public {
+        products[_id] = ProductDetail(_id, _name,_desc, _price,_imgaddress,_allowed);
     }
 
     function getData(uint _id) public view returns (ProductDetail memory) {
         return products[_id];
+    }
+
+
+    //================== wallet ========================//
+     uint public balanceReceived;
+
+    function receiveMoney() public payable {
+        balanceReceived += msg.value;
+    }
+
+    function getBalance() public view returns(uint) {
+        return address(this).balance;
+    }
+
+    function withdrawMoney() public {
+        address payable to = payable(msg.sender);
+        to.transfer(getBalance());
     }
 
 
@@ -182,18 +204,6 @@ contract wallet{
     //     owner = payable(msg.sender);
     // }
 
-    
-    function getBalance() public view returns(uint) {
-        return address(this).balance;
-    }
-
-    function sendMoney() public payable {
-
-    }
-
-    function withdrawAllMoney(address payable _to) public {
-        _to.transfer(address(this).balance);
-    }
 
     // function depositMoney() public payable {
     //     balanceReceived[msg.sender].totalBalance += msg.value;
